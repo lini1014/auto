@@ -1,0 +1,73 @@
+' Preview durch <Alt>d
+
+@startuml Anwendungskern
+
+interface Promise<T>
+
+package @nestjs/common {
+  class "@Injectable" as Injectable
+  hide Injectable circle
+}
+
+package typeorm {
+  class Repository<T>
+}
+
+package @nestjs/typeorm {
+  class "@InjectRepository" as InjectRepository
+  hide InjectRepository circle
+}
+
+package mail {
+  class MailService
+}
+
+package auto {
+  package entity {
+    class Auto
+  }
+
+  package service #DDDDDD {
+    class AutoInvalid
+    class ModellExists
+    class FgnrExists
+    class VersionInvalid
+    class VersionOutdated
+
+    class AutoWriteService << control >> <<@Injectable()>> {
+      + async create(auto: Auto): Promise<string|AutoInvalid|ModellExists|FgnrExists>
+      + async update(id: number, auto: Auto, version: string): Promise<number|AutoInvalid|ModellExists|FgnrExists|VersionInvalid|VersionOutdated>
+      + async delete(id: number): Promise<boolean>
+    }
+
+    AutoWriteService o--> "1" AutoValidationService: validationService
+    AutoWriteService o--> "1" AutoReadService: readService
+    AutoWriteService o--> "1" Repository: @InjectRepository repo
+    AutoWriteService o--> "1" MailService: mailService
+
+    AutoWriteService .up.> Injectable
+    AutoWriteService .up.> InjectRepository
+
+    AutoWriteService .up.> Promise
+    AutoWriteService ..> Auto
+    AutoWriteService .up.> AutoInvalid
+    AutoWriteService .up.> ModellExists
+    AutoWriteService .up.> FgnrExists
+    AutoWriteService .up.> VersionInvalid
+    AutoWriteService .up.> VersionOutdated
+
+    AutoInvalid .up[hidden].> Auto
+    Auto .up[hidden].> Promise
+    Auto .up[hidden].> Injectable
+    Auto .up[hidden].> InjectRepository
+    ModellExists .up[hidden].> Auto
+    AutoValidationService .[hidden].> Repository
+    AutoValidationService .[hidden].> MailService
+  }
+}
+
+hide empty members
+
+footer Niklas Lisker
+
+@enduml

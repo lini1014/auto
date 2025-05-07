@@ -1,0 +1,52 @@
+' Preview durch <Alt>d
+
+@startuml Anwendungskern
+
+interface Promise<T>
+
+package @nestjs/common {
+  class "@Injectable" as Injectable
+  hide Injectable circle
+}
+
+package typeorm {
+  class Repository<T>
+}
+
+package @nestjs/typeorm {
+  class "@InjectRepository" as InjectRepository
+  hide InjectRepository circle
+}
+
+package auto {
+  package entity {
+    class Auto
+  }
+
+  package service #DDDDDD {
+    class QueryBuilder
+
+    class AutoReadService << control >> <<@Injectable()>> {
+      + async findById(id: number): Promise<Auto | undefined>
+      + async find(suchkriterien?: Record<string, any>): Promise<Auto[]>
+    }
+
+    AutoReadService o--> "1" QueryBuilder: queryBuilder
+    AutoReadService o--> "1" Repository: @InjectRepository repo
+
+    AutoReadService .up.> Injectable
+    AutoReadService .up.> InjectRepository
+
+    AutoReadService .up.> Promise
+    AutoReadService ..> Auto
+
+    QueryBuilder .[hidden].> Repository
+    QueryBuilder .[hidden].> Auto
+  }
+}
+
+hide empty members
+
+footer (c) Jürgen Zimmermann
+
+@enduml

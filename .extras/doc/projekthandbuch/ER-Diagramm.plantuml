@@ -1,0 +1,45 @@
+' Preview durch <Alt>d
+
+@startuml ER Diagramm
+
+' hide the spot
+hide circle
+
+' evtl. Prbleme mit Kraehenfuessen vermeiden
+skinparam linetype ortho
+
+entity "Auto" {
+  * id: integer <<generated>>
+  --
+  * version: integer
+  * fgnr: text
+  * art: text
+  * preis: number
+  * rabatt: number
+  * lieferbar: boolean
+  * **modell_id**: integer <<FK>>
+    schlagwoerter: text
+  * erzeugt: timestamp
+  * aktualisiert: timestamp
+}
+
+entity "Modell" {
+  * id: integer <<generated>>
+  --
+  * modell: text
+}
+
+entity "Bild" {
+  * id: integer <<generated>>
+  --
+  * beschriftung: text
+    contentType: text
+  * **auto_id:**: integer <<FK>>
+}
+
+Auto ||..|| Modell
+Auto ||..o{ Bild
+
+footer Niklas Liker
+
+@enduml
