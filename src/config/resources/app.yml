@@ -47,7 +47,7 @@ db:
 # ==============================================================================
 # "Client Secret" muss durch die Umgebungsvariable CLIENT_SECRET gesetzt werden
 keycloak:
-  #schema: http
+  schema: http
   host: localhost
   port: 8880
   realm: nest
