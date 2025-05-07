@@ -31,19 +31,18 @@ pipeline {
             // fuer "apt-get install ..."
             args '--user root:root'
 
-            node:...-bookworm : in /etc/passwd gibt es "node" mit uid=1000
-            args '--user 1000:1000'
+            
         }
     }
 
     // Umgebungsvariable:
-    environment {
-         Cloud:
-        DB_HOST = 'http://localhost:8880'
-        DB_USER = 'postgres'
-        DB_PASS = 'p'
-        DB_POPULATE = true
-    }
+    //environment {
+        // Cloud:
+        //DB_HOST = 'unknown.amazonaws.com'
+        //DB_USER = 'nobody'
+        //DB_PASS = 'ChangeMe'
+        //DB_POPULATE = true
+    //}
 
     options {
         // Timeout fuer den gesamten Job
@@ -76,7 +75,7 @@ pipeline {
 
                 // https://www.jenkins.io/doc/pipeline/steps/git
                 // "named arguments" statt Funktionsaufruf mit Klammern
-                git url: 'https://github.com/juergenzimmermann/buch', branch: 'main', poll: true
+                git url: 'https://github.com/lini1014/auto', branch: 'main', poll: true
             }
         }
 
@@ -132,7 +131,7 @@ pipeline {
                 }
 
                 // /var/jenkins_home ist das Homedirectory vom User "jenkins"
-                // /var/jenkins_home/workspace/buch (siehe "pwd" oben)
+                // /var/jenkins_home/workspace/auto (siehe "pwd" oben)
                 sh 'cat package.json'
 
                 // Konfigurationsverzeichnis /root/.npm
@@ -218,7 +217,7 @@ pipeline {
                     }
                     // https://www.jenkins.io/doc/pipeline/steps/pipeline-utility-steps/#zip-create-zip-file
                     zip zipFile: 'auto.zip', archive: false, dir: 'dist'
-                    // jobs/buch/builds/.../archive/auto.zip
+                    // jobs/auto/builds/.../archive/auto.zip
                     archiveArtifacts 'auto.zip'
                 }
             }
@@ -228,7 +227,7 @@ pipeline {
             steps {
                 echo 'TODO: Docker-Image bauen'
                 // https://www.jenkins.io/doc/book/pipeline/docker/#building-containers
-                // def image = docker.build("juergenzimmermann/buch:${env.BUILD_ID}")
+                // def image = docker.build("juergenzimmermann/auto:${env.BUILD_ID}")
                 // image.push()
                 // image.push('latest')
             }
