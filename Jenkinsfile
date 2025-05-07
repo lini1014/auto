@@ -20,14 +20,29 @@
 // https://www.jenkins.io/doc/tutorials/create-a-pipeline-in-blue-ocean
 
 pipeline {
+    // agent any
     agent {
         docker {
-            image 'node:23.11.0-bookworm-slim' // Verwende die korrekte Node.js-Version basierend auf deinem Dockerfile
-            volumes '/var/jenkins_home/workspace/auto:/var/jenkins_home/workspace/auto:rw,z'
-            // args '--publish 3000:3000 --publish 5000:5000' // Nur notwendig, wenn du Ports explizit mappen musst
-            // args '--user root:root' // Nicht notwendig, da der User im Docker-Image (node) verwendet wird
+            image 'node:23.10.0-bookworm-slim'
+            // https://stackoverflow.com/questions/62330354/jenkins-pipeline-alpine-agent-apk-update-error-unable-to-lock-database-permis
+            // https://stackoverflow.com/questions/42630894/jenkins-docker-how-to-control-docker-user-when-using-image-inside-command/51986870#51986870
+            // https://stackoverflow.com/questions/42743201/npm-install-fails-in-jenkins-pipeline-in-docker
+            args '--publish 3000:3000 --publish 5000:5000'
+            // fuer "apt-get install ..."
+            args '--user root:root'
+
+            
         }
     }
+
+    // Umgebungsvariable:
+    //environment {
+        // Cloud:
+        //DB_HOST = 'unknown.amazonaws.com'
+        //DB_USER = 'nobody'
+        //DB_PASS = 'ChangeMe'
+        //DB_POPULATE = true
+    //}
 
     options {
         // Timeout fuer den gesamten Job
@@ -50,7 +65,13 @@ pipeline {
 
                 // Unterverzeichnisse src und test im WORKSPACE loeschen: vom letzten Build
                 // Kurzform fuer: sh([script: '...'])
-                sh 'rm -rf src __tests__ node_modules dist .extras/doc/api .extras/doc/folien/folien.html .extras/doc/projekthandbuch/html'
+                sh 'rm -rf src'
+                sh 'rm -rf __tests__'
+                sh 'rm -rf node_modules'
+                sh 'rm -rf dist'
+                sh 'rm -rf .extras/doc/api'
+                sh 'rm -rf .extras/doc/folien/folien.html'
+                sh 'rm -rf .extras/doc/projekthandbuch/html'
 
                 // https://www.jenkins.io/doc/pipeline/steps/git
                 // "named arguments" statt Funktionsaufruf mit Klammern
@@ -60,18 +81,44 @@ pipeline {
 
         stage('Install') {
             steps {
+                // https://stackoverflow.com/questions/51416409/jenkins-env-node-no-such-file-or-directory
+                // https://github.com/nodesource/distributions/blob/master/README.md#installation-instructions
+                // https://www.debian.org/distrib/packages
+                // https://packages.debian.org/buster/nodejs
                 sh 'id'
                 sh 'cat /etc/passwd'
                 sh 'echo $PATH'
                 sh 'pwd'
                 sh 'uname -a'
+                //sh 'lsb_release -a'
                 sh 'cat /etc/os-release'
                 sh 'cat /etc/debian_version'
 
                 sh 'apt-cache policy nodejs'
+                // https://github.com/nodesource/distributions#installation-instructions
+                // https://packages.debian.org/stable/python/python3
+                // https://packages.debian.org/bookworm/python3
+                // https://packages.debian.org/bookworm/python3-minimal
+                // https://packages.debian.org/trixie/python3.12
+                // https://computingforgeeks.com/how-to-install-python-on-debian-linux
+                // https://cloudcone.com/docs/article/how-to-install-python-3-10-on-debian-11
+                // https://linuxhint.com/install-python-debian-10
+                // https://computingforgeeks.com/how-to-install-python-on-debian-linux
+                // sh 'apt-get install --no-install-recommends --yes --show-progress gcc=4:12.2.0-3 g++=4:12.2.0-3 make=4.3-4.1 python3.11-minimal=3.11.2-6+deb12u4'
+                // sh 'apt show python3.11-minimal'
+                // sh 'apt-get install --no-install-recommends --yes --show-progress ca-certificates=20230311 curl=7.88.1-10+deb12u8 gnupg=2.2.40-1.1'
                 sh 'apt-get update --yes'
                 sh 'apt-get upgrade --yes'
-                sh 'python3 --version' // Überprüfe, ob Python jetzt gefunden wird
+                sh 'python3 --version'
+
+                // https://www.debian.org/releases: Bookworm = Debian 12
+                // https://deb.nodesource.com hat nur node_20.x
+                // sh 'mkdir -p /etc/apt/keyrings'
+                // sh 'curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key | gpg --dearmor -o /etc/apt/keyrings/nodesource.gpg'
+                // sh 'echo "deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_20.x nodistro main" | tee /etc/apt/sources.list.d/nodesource.list'
+                // sh 'apt-get update'
+                // sh 'apt-get install nodejs --no-install-recommends --yes --show-progress'
+                // sh 'apt-cache policy nodejs'
 
                 sh 'node --version'
                 sh 'npm i -g npm'
@@ -83,14 +130,19 @@ pipeline {
                     }
                 }
 
+                // /var/jenkins_home ist das Homedirectory vom User "jenkins"
+                // /var/jenkins_home/workspace/auto (siehe "pwd" oben)
                 sh 'cat package.json'
+
+                // Konfigurationsverzeichnis /root/.npm
                 sh 'npm ci --no-fund --no-audit'
             }
         }
 
         stage('Compile') {
             steps {
-                sh './node_modules/.bin/tsc --version' // Verwende den lokalen tsc
+                sh 'npx tsc --version'
+                // TODO Warum funktioniert npx nicht?
                 sh './node_modules/.bin/tsc'
             }
         }
@@ -103,7 +155,7 @@ pipeline {
                         //sh 'npm run test:coverage'
                     },
                     'ESLint': {
-                        sh './node_modules/.bin/eslint --version'
+                        sh 'npx eslint --version'
                         sh 'npm run eslint'
                     },
                     'Security Audit': {
@@ -111,15 +163,15 @@ pipeline {
                         //sh 'npm audit --omit=dev'
                     },
                     'AsciiDoctor': {
-                        sh './node_modules/.bin/asciidoctor --version'
+                        sh 'npx asciidoctor --version'
                         sh 'npm run asciidoctor'
                     },
                     'reveal.js': {
-                        sh './node_modules/.bin/asciidoctor-revealjs --version'
+                        sh 'npx asciidoctor-revealjs --version'
                         sh 'npm run revealjs'
                     },
                     'TypeDoc': {
-                        sh './node_modules/.bin/typedoc --version'
+                        sh 'npx typedoc --version'
                         sh 'npm run typedoc'
                     }
                 )
