@@ -109,6 +109,7 @@ pipeline {
                 // sh 'apt-get install --no-install-recommends --yes --show-progress ca-certificates=20230311 curl=7.88.1-10+deb12u8 gnupg=2.2.40-1.1'
                 sh 'apt-get update --yes'
                 sh 'apt-get upgrade --yes'
+                sh 'apt-get install --no-install-recommends --yes python3'
                 sh 'python3 --version'
 
                 // https://www.debian.org/releases: Bookworm = Debian 12
