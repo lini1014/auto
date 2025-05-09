@@ -79,7 +79,7 @@ export class AutoWriteController {
      * existieren.
      *
      * @param autoDTO JSON-Daten für ein Auto im Request-Body.
-     * @param req: Request-Objekt von Express für den Location-Header.
+     * @param req Request-Objekt von Express für den Location-Header.
      * @param res Leeres Response-Objekt von Express.
      * @returns Leeres Promise-Objekt.
      */

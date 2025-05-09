@@ -26,6 +26,7 @@ import {
     ApiParam,
     ApiProperty,
     ApiResponse,
+    ApiBearerAuth,
     ApiTags,
 } from '@nestjs/swagger';
 import { Request, Response } from 'express';
@@ -73,7 +74,7 @@ export class AutoQuery implements Suchkriterien {
 @Controller(paths.rest)
 @UseInterceptors(ResponseTimeInterceptor)
 @ApiTags('Auto REST-API')
-//@ApiBearerAuth()
+@ApiBearerAuth()
 export class AutoGetController {
 
     readonly #service: AutoReadService;
