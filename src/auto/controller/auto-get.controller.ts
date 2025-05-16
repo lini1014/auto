@@ -76,11 +76,9 @@ export class AutoQuery implements Suchkriterien {
 @ApiTags('Auto REST-API')
 @ApiBearerAuth()
 export class AutoGetController {
-
     readonly #service: AutoReadService;
 
     readonly #logger = getLogger(AutoGetController.name);
-
 
     constructor(service: AutoReadService) {
         this.#service = service;
@@ -90,7 +88,7 @@ export class AutoGetController {
      * Suche auto mit ID
      * @param id für ID
      * @param req Request Objekt
-     * @param version Versionsnr    
+     * @param version Versionsnr
      * @param res Leere response
      * @returns Return objekt
      */
@@ -122,7 +120,7 @@ export class AutoGetController {
         @Req() req: Request,
         @Headers('If-None-Match') version: string | undefined,
         @Res() res: Response,
-    ): Promise<Response<Auto | undefined>>{
+    ): Promise<Response<Auto | undefined>> {
         this.#logger.debug('getById: id=%s, version=%s', id, version);
 
         if (req.accepts(['json', 'html']) === false) {

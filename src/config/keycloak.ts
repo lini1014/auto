@@ -54,7 +54,7 @@ if (keycloak !== undefined && keycloak !== null) {
             'Der konfigurierte Client-ID für Keycloak ist kein String',
         );
     }
-    
+
     if (
         keycloak.tokenValidation !== undefined &&
         !Object.values(TokenValidation).includes(keycloak.tokenValidation) // eslint-disable-line @typescript-eslint/no-unsafe-argument
